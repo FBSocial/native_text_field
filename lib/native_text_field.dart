@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
+
 class NativeTextField extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -18,11 +19,14 @@ class NativeTextField extends StatefulWidget {
   final TextStyle placeHolderStyle;
   final int maxLength;
   final TextAlign textAlign;
+  final TextInputType keyboardType; // 支持的类型是 .text/.number/.phone/.emailAddress
   final double width;
+  final String allowRegExp;
   final VoidCallback onEditingComplete;
   final Function(String) onSubmitted;
   final Function(String) onChanged;
   final bool autoFocus;
+  final bool readOnly;
 
   const NativeTextField({
     this.controller,
@@ -36,8 +40,11 @@ class NativeTextField extends StatefulWidget {
     this.width,
     this.onEditingComplete,
     this.onSubmitted,
+    this.keyboardType = TextInputType.text,
     this.onChanged,
+    this.allowRegExp,
     this.autoFocus = false,
+    this.readOnly = false,
   });
 
   @override
@@ -67,7 +74,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
       },
       'textAlign': widget.textAlign.toString(),
       'maxLength': widget.maxLength,
-      'done': widget.onEditingComplete != null || widget.onSubmitted != null
+      'done': widget.onEditingComplete != null || widget.onSubmitted != null,
+      'keyboardType': widget.keyboardType.toJson()['name'],
+      'allowRegExp': widget.allowRegExp,
+      'readOnly': widget.readOnly,
     };
   }
 
@@ -80,6 +90,12 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
     _controller = widget.controller ?? TextEditingController();
     _focusNode = widget.focusNode ?? FocusNode();
+
+    if (_controller.text.isNotEmpty) {
+      Future.delayed(const Duration(milliseconds: 300)).then((value) {
+        _channel.invokeMethod('setText', _controller.text);
+      });
+    }
 
     _controller.addListener(() {
       _channel.invokeMethod('setText', _controller.text);
@@ -99,6 +115,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         break;
       case 'updateText':
         print('updateText: ${call.arguments ?? ''}');
+        widget.onChanged?.call(call.arguments ?? '');
         _controller.text = call.arguments ?? '';
         break;
       case 'submitText':

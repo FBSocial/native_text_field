@@ -36,6 +36,8 @@ class _MyAppState extends State<MyApp> {
             focusNode: _focusNode,
             text: '1233',
             autoFocus: true,
+//            readOnly: true,
+//            allowRegExp: ' |[a-zA-Z]|[\u4e00-\u9fa5]|[0-9]',
             textStyle: Theme.of(context)
                 .textTheme
                 .bodyText2
@@ -45,7 +47,7 @@ class _MyAppState extends State<MyApp> {
                 .textTheme
                 .bodyText1
                 .copyWith(color: Colors.redAccent, fontSize: 18),
-            maxLength: 5000,
+            maxLength: 10,
             onChanged: (str) {
               print('onChanged: $str');
             },

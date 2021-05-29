@@ -14,9 +14,10 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
     var textField:UITextField!
     var channel:FlutterMethodChannel!
     var maxLength:Int = 0
+    var allowRegExp = ""//" |[a-zA-Z]|[\u{4e00}-\u{9fa5}]|[0-9]"
     
     var defaultAttributes: [NSAttributedString.Key: Any] = [
-        .font: UIFont.systemFont(ofSize: 14),
+        .font: UIFont.systemFont(ofSize: 14, weight: UIFont.Weight.light),
         .foregroundColor: UIColor.black,
     ]
     
@@ -44,6 +45,10 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
         let maxLength = (args?["maxLength"] as? Int) ?? 5000
         let done = (args?["done"] as? Bool) ?? false
         let textAlign = args?["textAlign"] as? String
+        let keyboardType = args?["keyboardType"] as? String
+        let allowRegExp = (args?["allowRegExp"] as? String) ?? ""
+        let readOnly = (args?["readOnly"] as? Bool) ?? false
+        
         defaultAttributes = textStyle2Attribute(textStyle: textStyle, defaultAttr: defaultAttributes)
         let placeHolderStyleAttr = textStyle2Attribute(textStyle: placeHolderStyle, defaultAttr: defaultAttributes)
         
@@ -52,8 +57,13 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
         textField.delegate = self
         textField.textAlignment = string2textAlignment(str: textAlign)
         textField.backgroundColor = UIColor.clear
+        textField.keyboardType = string2KeyboardType(str: keyboardType)
         textField.attributedPlaceholder = NSAttributedString(string: placeHolder, attributes: placeHolderStyleAttr)
+        textField.isUserInteractionEnabled = !readOnly
+        
+        textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         self.maxLength = maxLength
+        self.allowRegExp = allowRegExp
         if done { textField.returnKeyType = .done }
     }
     
@@ -69,7 +79,7 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
             }
             break
         case "setText":
-            if let text = call.arguments as? String {
+            if let text = call.arguments as? String , text != textField.text {
                 setText(text: text)
             }
             break
@@ -94,18 +104,27 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         updateFocus(focus: false)
     }
-    
+
     func textFieldDidBeginEditing(_ textField: UITextField) {
         updateFocus(focus: true)
     }
     
+    @objc func textFieldDidChange() {
+        updateText(text: textField.text ?? "")
+    }
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if allowRegExp.count > 0 {
+            let re = try? NSRegularExpression(pattern: allowRegExp, options: NSRegularExpression.Options.caseInsensitive)
+            let count = re?.matches(in: string, options: NSRegularExpression.MatchingOptions.withoutAnchoringBounds, range: NSRange(location: 0, length: string.count)).count ?? 0
+            if count != string.count { return false }
+        }
+        
         if let text = textField.text, let range = Range(range, in: text) {
             let newText = text.replacingCharacters(in: range, with: string)
             if maxLength != 0 && newText.count > maxLength {
               return false
             }
-            updateText(text: newText)
         }
         return true
     }
@@ -145,6 +164,24 @@ extension NativeTextField {
             return .right
         default:
             return .left
+        }
+    }
+    
+func string2KeyboardType(str: String?) -> UIKeyboardType {
+        guard let str = str else {
+            return .default
+        }
+        switch str {
+        case "TextInputType.text":
+            return .default
+        case "TextInputType.number":
+            return .numberPad
+        case "TextInputType.phone":
+            return .phonePad
+        case "TextInputType.emailAddress":
+            return .emailAddress
+        default:
+            return .default
         }
     }
     
