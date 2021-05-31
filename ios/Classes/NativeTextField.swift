@@ -29,7 +29,8 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
         var _frame = frame
         if _frame.size.width == 0 {
             let width = (args?["width"] as? CGFloat) ?? UIScreen.main.bounds.size.width
-            _frame = CGRect(x: frame.origin.x, y: frame.origin.y, width: width, height: 40)
+            let height = args?["height"] as? CGFloat
+            _frame = CGRect(x: frame.origin.x, y: frame.origin.y, width: width, height: height ?? 40)
         }
         super.init()
         
@@ -80,6 +81,7 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
             break
         case "setText":
             if let text = call.arguments as? String , text != textField.text {
+                print("set: \(text)")
                 setText(text: text)
             }
             break
@@ -110,6 +112,7 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
     }
     
     @objc func textFieldDidChange() {
+        print("textFieldDidChange: \(textField.text ?? "")")
         updateText(text: textField.text ?? "")
     }
     

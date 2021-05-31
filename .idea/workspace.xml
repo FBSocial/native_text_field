@@ -3,6 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="be4dbb9b-3b9a-458e-ad74-cfacf1e237a9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/example/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/ios/Classes/NativeTextField.swift" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/ios/Classes/NativeTextField.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/lib/native_text_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_text_field/lib/native_text_field.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/NativeTextField.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/NativeTextField.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/native_text_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/native_text_field.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

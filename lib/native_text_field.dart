@@ -23,12 +23,14 @@ class NativeTextField extends StatefulWidget {
   final TextAlign textAlign;
   final TextInputType keyboardType; // 支持的类型是 .text/.number/.phone/.emailAddress
   final double width;
+  final double height;
   final String allowRegExp;
   final VoidCallback onEditingComplete;
   final Function(String) onSubmitted;
   final Function(String) onChanged;
   final bool autoFocus;
   final bool readOnly;
+
 
   const NativeTextField({
     this.controller,
@@ -40,6 +42,7 @@ class NativeTextField extends StatefulWidget {
     this.maxLength = 5000,
     this.textAlign = TextAlign.start,
     this.width,
+    this.height,
     this.onEditingComplete,
     this.onSubmitted,
     this.keyboardType = TextInputType.text,
@@ -58,19 +61,24 @@ class _NativeTextFieldState extends State<NativeTextField> {
   MethodChannel _channel;
   TextEditingController _controller;
   FocusNode _focusNode;
+  Set _updateMap = {};
 
   Map createParams() {
     return {
-      'width': widget.width ?? MediaQuery.of(context).size.width,
+      'width': widget.width ?? MediaQuery
+          .of(context)
+          .size
+          .width,
+      'height': widget.height ?? 40,
       'text': widget.text,
       'textStyle': {
-        'color': widget.textStyle.color.value,
+        'color': (widget.textStyle?.color ?? Colors.black).value,
         'fontSize': widget.textStyle.fontSize,
         'height': widget.textStyle.height ?? 1.17
       },
       'placeHolder': widget.placeHolder,
       'placeHolderStyle': {
-        'color': widget.placeHolderStyle.color.value,
+        'color': (widget.placeHolderStyle?.color ?? Colors.black).value,
         'fontSize': widget.placeHolderStyle.fontSize,
         'height': widget.placeHolderStyle.height ?? 1.35
       },
@@ -100,6 +108,11 @@ class _NativeTextFieldState extends State<NativeTextField> {
     }
 
     _controller.addListener(() {
+      final text = _controller.text;
+      if (_updateMap.contains(text)) {
+        _updateMap.remove(text);
+        return;
+      }
       _channel.invokeMethod('setText', _controller.text);
     });
     super.initState();
@@ -116,9 +129,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
         }
         break;
       case 'updateText':
-        print('updateText: ${call.arguments ?? ''}');
-        widget.onChanged?.call(call.arguments ?? '');
-        _controller.text = call.arguments ?? '';
+        final text = call.arguments ?? '';
+        widget.onChanged?.call(text);
+        _updateMap.add(text);
+        _controller.text = text;
         break;
       case 'submitText':
         final text = call.arguments ?? '';
@@ -134,7 +148,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
   Widget build(BuildContext context) {
     if (Platform.isIOS) {
       return SizedBox(
-        height: 44,
+        height: widget.height ?? 40,
         child: Focus(
           focusNode: _focusNode,
           onFocusChange: (focus) {

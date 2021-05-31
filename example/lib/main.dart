@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
                 .textTheme
                 .bodyText1
                 .copyWith(color: Colors.redAccent, fontSize: 18),
-            maxLength: 10,
+//            maxLength: 10,
             onChanged: (str) {
               print('onChanged: $str');
             },
