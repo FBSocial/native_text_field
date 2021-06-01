@@ -43,6 +43,8 @@ class _MyAppState extends State<MyApp> {
                 .bodyText2
                 .copyWith(color: Colors.black, fontSize: 14),
             placeHolder: '请输入....',
+            maxLines: 3,
+            maxLength: 20,
             placeHolderStyle: Theme.of(context)
                 .textTheme
                 .bodyText1

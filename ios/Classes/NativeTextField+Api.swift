@@ -22,11 +22,15 @@ extension NativeTextField {
     }
     
     func submitText() {
-        channel.invokeMethod("submitText", arguments: textField.text)
+        channel.invokeMethod("submitText", arguments: textField?.text ?? textView.text)
     }
     
     func setText(text: String) {
-        textField.text = text
+        if textField != nil {
+            textField.text = text
+        } else {
+            textView.text = text
+        }
     }
     
 }

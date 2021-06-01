@@ -30,6 +30,7 @@ class NativeTextField extends StatefulWidget {
   final Function(String) onChanged;
   final bool autoFocus;
   final bool readOnly;
+  final double maxLines;
 
 
   const NativeTextField({
@@ -48,6 +49,7 @@ class NativeTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.onChanged,
     this.allowRegExp,
+    this.maxLines = 1,
     this.autoFocus = false,
     this.readOnly = false,
   });
@@ -88,6 +90,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
       'keyboardType': widget.keyboardType.toJson()['name'],
       'allowRegExp': widget.allowRegExp,
       'readOnly': widget.readOnly,
+      'maxLines': widget.maxLines
     };
   }
 

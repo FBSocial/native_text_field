@@ -8,10 +8,11 @@
 import Foundation
 import Flutter
 
-class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
+class NativeTextField : NSObject,FlutterPlatformView {
     
     var viewId:Int64 = -1
     var textField:UITextField!
+    var textView:PlaceholderTextView!
     var channel:FlutterMethodChannel!
     var maxLength:Int = 0
     var allowRegExp = ""//" |[a-zA-Z]|[\u{4e00}-\u{9fa5}]|[0-9]"
@@ -39,6 +40,48 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
             self?.handlerMethodCall(call, result)
         }
         
+        let maxLines = (args?["maxLines"] as? Int) ?? 1
+        if maxLines == 1 {
+            initTextField(frame: _frame, args: args)
+        } else {
+            initTextView(frame: _frame, args: args)
+        }
+        
+    }
+    
+    func handlerMethodCall(_ call: FlutterMethodCall, _ result: FlutterResult)  {
+        switch call.method {
+        case "updateFocus":
+            if let focus = call.arguments as? Bool {
+                if focus {
+                    (textField ?? textView).becomeFirstResponder()
+                } else {
+                    (textField ?? textView).resignFirstResponder()
+                }
+            }
+            break
+        case "setText":
+            if let text = call.arguments as? String , text != textField?.text ?? textView?.text ?? "" {
+                print("set: \(text)")
+                setText(text: text)
+            }
+            break
+        default:
+            break
+        }
+    }
+    
+    func view() -> UIView {
+        return textField ?? textView
+    }
+
+    
+    
+}
+
+extension NativeTextField : UITextViewDelegate {
+    
+    func initTextView(frame: CGRect, args: [String: Any]?) {
         let initText = (args?["text"] as? String) ?? ""
         let textStyle = (args?["textStyle"] as? [String: Any])
         let placeHolderStyle = (args?["placeHolderStyle"] as? [String: Any])
@@ -53,87 +96,58 @@ class NativeTextField : NSObject,FlutterPlatformView, UITextFieldDelegate {
         defaultAttributes = textStyle2Attribute(textStyle: textStyle, defaultAttr: defaultAttributes)
         let placeHolderStyleAttr = textStyle2Attribute(textStyle: placeHolderStyle, defaultAttr: defaultAttributes)
         
-        textField = UITextField(frame: _frame)
-        textField.attributedText = NSMutableAttributedString(string: initText,attributes: defaultAttributes)
-        textField.delegate = self
-        textField.textAlignment = string2textAlignment(str: textAlign)
-        textField.backgroundColor = UIColor.clear
-        textField.keyboardType = string2KeyboardType(str: keyboardType)
-        textField.attributedPlaceholder = NSAttributedString(string: placeHolder, attributes: placeHolderStyleAttr)
-        textField.isUserInteractionEnabled = !readOnly
         
-        textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        textView = PlaceholderTextView(frame: frame)
+        textView.attributedText = NSMutableAttributedString(string: initText,attributes: defaultAttributes)
+        textView.delegate = self
+        textView.font = defaultAttributes[.font] as? UIFont
+        textView.textAlignment = string2textAlignment(str: textAlign)
+        textView.backgroundColor = UIColor.clear
+        textView.keyboardType = string2KeyboardType(str: keyboardType)
+        textView.attributedPlaceholder = NSAttributedString(string: placeHolder, attributes: placeHolderStyleAttr)
+        textView.isUserInteractionEnabled = !readOnly
         self.maxLength = maxLength
         self.allowRegExp = allowRegExp
-        if done { textField.returnKeyType = .done }
-    }
-    
-    func handlerMethodCall(_ call: FlutterMethodCall, _ result: FlutterResult)  {
-        switch call.method {
-        case "updateFocus":
-            if let focus = call.arguments as? Bool {
-                if focus {
-                    textField.becomeFirstResponder()
-                } else {
-                    textField.resignFirstResponder()
-                }
-            }
-            break
-        case "setText":
-            if let text = call.arguments as? String , text != textField.text {
-                print("set: \(text)")
-                setText(text: text)
-            }
-            break
-        default:
-            break
-        }
-    }
-    
-    func view() -> UIView {
-        return textField
-    }
-
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField.returnKeyType == .done {
-            submitText()
-            return false
-        }
-        return true
+        if done { textView.returnKeyType = .done }
     }
     
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        updateFocus(focus: false)
-    }
-
-    func textFieldDidBeginEditing(_ textField: UITextField) {
+    func textViewDidBeginEditing(_ textView: UITextView) {
         updateFocus(focus: true)
     }
     
-    @objc func textFieldDidChange() {
-        print("textFieldDidChange: \(textField.text ?? "")")
-        updateText(text: textField.text ?? "")
+    func textViewDidEndEditing(_ textView: UITextView) {
+        updateFocus(focus: false)
     }
     
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if allowRegExp.count > 0 {
-            let re = try? NSRegularExpression(pattern: allowRegExp, options: NSRegularExpression.Options.caseInsensitive)
-            let count = re?.matches(in: string, options: NSRegularExpression.MatchingOptions.withoutAnchoringBounds, range: NSRange(location: 0, length: string.count)).count ?? 0
-            if count != string.count { return false }
+    func textViewDidChange(_ textView: UITextView) {
+        updateText(text: textView.text ?? "")
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        textView.typingAttributes = defaultAttributes
+        if text == "\n" && textView.returnKeyType == .done {
+            submitText()
+            return false
         }
-        
-        if let text = textField.text, let range = Range(range, in: text) {
-            let newText = text.replacingCharacters(in: range, with: string)
+        if let _text = textView.text, let _range = Range(range, in: _text) {
+            let newText = _text.replacingCharacters(in: _range, with: text)
             if maxLength != 0 && newText.count > maxLength {
-              return false
+                let canInputLength = maxLength - textView.text!.count + range.length
+                if canInputLength > 0 {
+                    let value = _text.replacingCharacters(in: _range, with: text.prefix(canInputLength))
+                    textView.text = value
+                    updateText(text: value)
+                }
+                return false
             }
+            
         }
         return true
     }
     
+    
 }
-
 
 extension NativeTextField {
     func textStyle2Attribute(textStyle :[String: Any]?, defaultAttr :[NSAttributedString.Key: Any]?) -> [NSAttributedString.Key: Any] {
