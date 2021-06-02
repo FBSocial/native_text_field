@@ -27,6 +27,7 @@ extension NativeTextField : UITextFieldDelegate {
         textField = UITextField(frame: frame)
         textField.attributedText = NSMutableAttributedString(string: initText,attributes: defaultAttributes)
         textField.delegate = self
+        textField.font = defaultAttributes[.font] as? UIFont
         textField.textAlignment = string2textAlignment(str: textAlign)
         textField.backgroundColor = UIColor.clear
         textField.keyboardType = string2KeyboardType(str: keyboardType)
@@ -61,6 +62,7 @@ extension NativeTextField : UITextFieldDelegate {
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        textField.typingAttributes = defaultAttributes
         if allowRegExp.count > 0 {
             let re = try? NSRegularExpression(pattern: allowRegExp, options: NSRegularExpression.Options.caseInsensitive)
             let count = re?.matches(in: string, options: NSRegularExpression.MatchingOptions.withoutAnchoringBounds, range: NSRange(location: 0, length: string.count)).count ?? 0

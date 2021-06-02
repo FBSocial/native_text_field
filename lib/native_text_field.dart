@@ -155,7 +155,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         child: Focus(
           focusNode: _focusNode,
           onFocusChange: (focus) {
-            _channel.invokeMethod('updateFocus', focus);
+            _channel?.invokeMethod('updateFocus', focus);
           },
           child: UiKitView(
             viewType: "com.fanbook.native_textfield",
