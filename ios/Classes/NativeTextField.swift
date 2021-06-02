@@ -102,6 +102,7 @@ extension NativeTextField : UITextViewDelegate {
         textView.delegate = self
         textView.font = defaultAttributes[.font] as? UIFont
         textView.textAlignment = string2textAlignment(str: textAlign)
+        textView.textColor = defaultAttributes[.foregroundColor] as? UIColor ?? UIColor.black
         textView.backgroundColor = UIColor.clear
         textView.keyboardType = string2KeyboardType(str: keyboardType)
         textView.attributedPlaceholder = NSAttributedString(string: placeHolder, attributes: placeHolderStyleAttr)
