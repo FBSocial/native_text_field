@@ -34,8 +34,6 @@ extension NativeTextField : UITextFieldDelegate {
         textField.keyboardType = string2KeyboardType(str: keyboardType)
         textField.attributedPlaceholder = NSAttributedString(string: placeHolder, attributes: placeHolderStyleAttr)
         textField.isUserInteractionEnabled = !readOnly
-        
-        textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         self.maxLength = maxLength
         self.allowRegExp = allowRegExp
         if done { textField.returnKeyType = .done }
