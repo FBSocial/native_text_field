@@ -29,7 +29,11 @@ extension NativeTextField {
         if textField != nil {
             textField.text = text
         } else {
+            let needSetPlaceholder = textView.text.isEmpty || text.isEmpty;
             textView.text = text
+            if needSetPlaceholder {
+                textView.attributedPlaceholder = textView.attributedPlaceholder
+            }
         }
     }
     

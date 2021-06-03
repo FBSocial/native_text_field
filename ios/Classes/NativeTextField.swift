@@ -185,7 +185,7 @@ extension NativeTextField {
         }
     }
     
-func string2KeyboardType(str: String?) -> UIKeyboardType {
+    func string2KeyboardType(str: String?) -> UIKeyboardType {
         guard let str = str else {
             return .default
         }
