@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
                 .copyWith(color: Colors.redAccent, fontSize: 18),
 //            maxLength: 10,
             onChanged: (str) {
-              print('onChanged: $str');
+              print('onChanged: $str, ${Characters(str).length}');
             },
             onSubmitted: (str) {
               print('onSubmitted: $str');
