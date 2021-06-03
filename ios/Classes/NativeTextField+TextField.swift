@@ -58,10 +58,6 @@ extension NativeTextField : UITextFieldDelegate {
         updateFocus(focus: true)
     }
     
-    @objc func textFieldDidChange() {
-        updateText(text: textField.text ?? "")
-    }
-    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         textField.typingAttributes = defaultAttributes
         if allowRegExp.count > 0 {
@@ -81,6 +77,7 @@ extension NativeTextField : UITextFieldDelegate {
                 }
                 return false
             }
+            updateText(text: newText)
         }
         return true
     }
