@@ -34,6 +34,8 @@ extension NativeTextField : UITextFieldDelegate {
         textField.keyboardType = string2KeyboardType(str: keyboardType)
         textField.attributedPlaceholder = NSAttributedString(string: placeHolder, attributes: placeHolderStyleAttr)
         textField.isUserInteractionEnabled = !readOnly
+        
+        textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         self.maxLength = maxLength
         self.allowRegExp = allowRegExp
         if done { textField.returnKeyType = .done }
@@ -56,6 +58,10 @@ extension NativeTextField : UITextFieldDelegate {
         updateFocus(focus: true)
     }
     
+    @objc func textFieldDidChange() {
+        updateText(text: textField.text ?? "")
+    }
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         textField.typingAttributes = defaultAttributes
         if allowRegExp.count > 0 {
@@ -75,7 +81,6 @@ extension NativeTextField : UITextFieldDelegate {
                 }
                 return false
             }
-            updateText(text: newText)
         }
         return true
     }

@@ -133,7 +133,7 @@ extension NativeTextField : UITextViewDelegate {
         }
         if let _text = textView.text, let _range = Range(range, in: _text) {
             let newText = _text.replacingCharacters(in: _range, with: text)
-            if maxLength != 0 && newText.count > maxLength {
+            if maxLength != 0 && newText.count > maxLength && text.count != 0 {
                 let canInputLength = maxLength - textView.text!.count + range.length
                 if canInputLength > 0 {
                     let value = _text.replacingCharacters(in: _range, with: text.prefix(canInputLength))
