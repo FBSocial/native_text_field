@@ -5,7 +5,6 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -51,7 +50,8 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
         Log.d(TAG, "initViewParams: " + creationParams);
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         mEditText.setMinLines(1);
-        mEditText.setGravity(Gravity.CENTER_VERTICAL);
+        mEditText.setMaxLines(creationParams.getMaxLines());
+        mEditText.setGravity(Utils.string2TextAlignment(creationParams.getTextAlign()));
         mEditText.setLayoutParams(layoutParams);
 
         double textSize = creationParams.getTextStyle().getFontSize();
@@ -59,7 +59,8 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
         double verticalPaddingDp = ((DEFAULT_HEIGHT - textSize) / 2);
         int verticalPadding = Utils.dip2px(mContext, (float) (verticalPaddingDp - (textHeightRatio - 1) * textSize)) / 2;
-        mEditText.setPadding(Utils.dip2px(mContext, 14), verticalPadding, Utils.dip2px(mContext, 4), verticalPadding);
+        mEditText.setPadding(Utils.dip2px(mContext, 2), verticalPadding, Utils.dip2px(mContext, 4), verticalPadding);
+        mEditText.setInputType(Utils.string2InputType(creationParams.getKeyboardType()));
 
         mEditText.setWidth(Utils.dip2px(this.mEditText.getContext(), (float) creationParams.getWidth()));
         mEditText.setText(creationParams.getText());
@@ -68,6 +69,7 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
         }
         mEditText.setTextColor((int) creationParams.getTextStyle().getColor());
         mEditText.setTextSize((float) textSize);
+        mEditText.setEnabled(!creationParams.isReadOnly());
 
         Utils.setTextLineHeight(mEditText, (float) textHeightRatio);
 
