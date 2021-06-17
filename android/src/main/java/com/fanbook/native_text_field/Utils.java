@@ -48,7 +48,7 @@ public class Utils {
     }
 
     public static int string2InputType(String inputTypeString) {
-        int type = InputType.TYPE_CLASS_PHONE;
+        int type = InputType.TYPE_CLASS_TEXT;
         if ("TextInputType.number".equals(inputTypeString)) {
             return InputType.TYPE_CLASS_NUMBER;
         } else if ("TextInputType.phone".equals(inputTypeString)) {
