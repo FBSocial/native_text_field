@@ -21,9 +21,11 @@ public class CreationParams {
     public CreationParams(Map<String, Object> params) {
         Object width = params.get("width");
         this.width = getValue(width);
+        if (this.width == 0) this.width = 200;
 
         Object height = params.get("height");
         this.height = getValue(height);
+        if (this.height == 0) this.height = 40.0;
 
         Object text = params.get("text");
         this.text = text == null ? "" : (String) text;

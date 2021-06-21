@@ -37,25 +37,25 @@ public class Utils {
         return height * textHeight;
     }
 
-    public static int string2TextAlignment(String alignmentString) {
+    public static int string2TextAlignment(String alignmentString, boolean multiLines) {
         int gravity = Gravity.LEFT;
         if ("TextAlign.right".equals(alignmentString)) {
             return Gravity.RIGHT;
         } else if ("TextAlign.center".equals(alignmentString)) {
-            return Gravity.CENTER;
+            return Gravity.CENTER_HORIZONTAL;
         }
-        return gravity;
+        return multiLines? gravity : (gravity | Gravity.CENTER_VERTICAL);
     }
 
-    public static int string2InputType(String inputTypeString) {
+    public static int string2InputType(String inputTypeString, boolean multiLines) {
         int type = InputType.TYPE_CLASS_TEXT;
         if ("TextInputType.number".equals(inputTypeString)) {
-            return InputType.TYPE_CLASS_NUMBER;
+            type = InputType.TYPE_CLASS_NUMBER;
         } else if ("TextInputType.phone".equals(inputTypeString)) {
-            return InputType.TYPE_CLASS_PHONE;
+            type = InputType.TYPE_CLASS_PHONE;
         } else if ("TextInputType.emailAddress".equals(inputTypeString)) {
-            return InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+            type = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
         }
-        return type;
+        return multiLines ? (type | InputType.TYPE_TEXT_FLAG_MULTI_LINE) : type;
     }
 }

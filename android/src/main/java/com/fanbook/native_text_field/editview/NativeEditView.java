@@ -5,9 +5,12 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
@@ -28,9 +31,8 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
     private final Context mContext;
     private final EditText mEditText;
+    private FixedHeightScrollView mContainer;
     private MethodChannel methodChannel;
-
-    private final int DEFAULT_HEIGHT = 40;
 
     public NativeEditView(Context context, int viewId, Map<String, Object> creationParams, BinaryMessenger
             messenger) {
@@ -51,16 +53,20 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         mEditText.setMinLines(1);
         mEditText.setMaxLines(creationParams.getMaxLines());
-        mEditText.setGravity(Utils.string2TextAlignment(creationParams.getTextAlign()));
+        boolean multiLines = creationParams.getMaxLines() > 1;
+        if (!multiLines) {
+            layoutParams.gravity = Gravity.CENTER_VERTICAL;
+        }
+        mEditText.setGravity(Utils.string2TextAlignment(creationParams.getTextAlign(), multiLines));
         mEditText.setLayoutParams(layoutParams);
 
         double textSize = creationParams.getTextStyle().getFontSize();
         double textHeightRatio = (float) creationParams.getTextStyle().getHeight();
 
-        double verticalPaddingDp = ((DEFAULT_HEIGHT - textSize) / 2);
-        int verticalPadding = Utils.dip2px(mContext, (float) (verticalPaddingDp - (textHeightRatio - 1) * textSize)) / 2;
-        mEditText.setPadding(Utils.dip2px(mContext, 2), verticalPadding, Utils.dip2px(mContext, 4), verticalPadding);
-        mEditText.setInputType(Utils.string2InputType(creationParams.getKeyboardType()));
+//        double verticalPaddingDp = ((creationParams.getHeight() - textSize) / 2);
+//        int verticalPadding = Utils.dip2px(mContext, (float) (verticalPaddingDp -(textHeightRatio - 1) * textSize)) / 2;
+        mEditText.setPadding(0, 0, 0, 0);
+        mEditText.setInputType(Utils.string2InputType(creationParams.getKeyboardType(), multiLines));
 
         mEditText.setWidth(Utils.dip2px(this.mEditText.getContext(), (float) creationParams.getWidth()));
         mEditText.setText(creationParams.getText());
@@ -79,6 +85,18 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
         mEditText.setFilters(filters);
         mEditText.setBackground(null);
         mEditText.setLongClickable(true);
+
+        // 这么做是解决flutter那边设置了高度，然后又存在padding的情况
+        if (multiLines) {
+            mContainer = new FixedHeightScrollView(mContext, (int) creationParams.getHeight());
+        } else {
+            mContainer = new FixedHeightScrollView(mContext);
+        }
+        mContainer.addView(mEditText);
+        mContainer.setPadding(0, 0, 0, 0);
+        mContainer.setHorizontalScrollBarEnabled(false);
+        mContainer.setVerticalScrollBarEnabled(false);
+        mContainer.setScrollable(multiLines);
     }
 
     private void initMethodChannel(BinaryMessenger messenger, int viewId) {
@@ -129,7 +147,7 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
     @Override
     public View getView() {
-        return mEditText;
+        return mContainer;
     }
 
     @Override
