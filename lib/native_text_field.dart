@@ -8,9 +8,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-
 
 class NativeTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -30,8 +30,7 @@ class NativeTextField extends StatefulWidget {
   final Function(String) onChanged;
   final bool autoFocus;
   final bool readOnly;
-  final double maxLines;
-
+  final int maxLines;
 
   const NativeTextField({
     this.controller,
@@ -59,7 +58,6 @@ class NativeTextField extends StatefulWidget {
 }
 
 class _NativeTextFieldState extends State<NativeTextField> {
-
   MethodChannel _channel;
   TextEditingController _controller;
   FocusNode _focusNode;
@@ -67,10 +65,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
   Map createParams() {
     return {
-      'width': widget.width ?? MediaQuery
-          .of(context)
-          .size
-          .width,
+      'width': widget.width ?? MediaQuery.of(context).size.width,
       'height': widget.height ?? 40,
       'text': widget.text,
       'textStyle': {
@@ -167,9 +162,48 @@ class _NativeTextFieldState extends State<NativeTextField> {
             },
             gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
               new Factory<OneSequenceGestureRecognizer>(
-                    () => new EagerGestureRecognizer(),
+                () => new EagerGestureRecognizer(),
               ),
             ].toSet(),
+          ),
+        ),
+      );
+    } else if (Platform.isAndroid) {
+      return SizedBox(
+        height: widget.height ?? 40,
+        child: Focus(
+          focusNode: _focusNode,
+          onFocusChange: (focus) {
+            _channel?.invokeMethod('updateFocus', focus);
+          },
+          child: PlatformViewLink(
+            viewType: "com.fanbook.native_textfield",
+            surfaceFactory: (context, controller) {
+              return AndroidViewSurface(
+                controller: controller,
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
+                  new Factory<OneSequenceGestureRecognizer>(
+                    () => new EagerGestureRecognizer(),
+                  ),
+                ].toSet(),
+                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+              );
+            },
+            onCreatePlatformView: (params) {
+              params.onPlatformViewCreated(params.id);
+              return PlatformViewsService.initSurfaceAndroidView(
+                id: params.id,
+                viewType: "com.fanbook.native_textfield",
+                layoutDirection: TextDirection.ltr,
+                creationParams: createParams(),
+                creationParamsCodec: const StandardMessageCodec(),
+              )
+                ..addOnPlatformViewCreatedListener((id) {
+                  _channel = MethodChannel('com.fanbook.native_textfield_$id');
+                  _channel.setMethodCallHandler(_handlerCall);
+                })
+                ..create();
+            },
           ),
         ),
       );
