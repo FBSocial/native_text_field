@@ -54,6 +54,7 @@ public class CreationParams {
 
         Object maxLength = params.get("maxLength");
         this.maxLength = maxLength == null ? 5000 : (int) maxLength;
+        if (this.maxLength == 0) this.maxLength = 5000;
 
         Object done = params.get("done");
         this.done = done != null && (boolean) done;
