@@ -1,11 +1,17 @@
 package com.fanbook.native_text_field;
 
 import android.content.Context;
+import android.text.Editable;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
+import com.vdurmont.emoji.EmojiParser;
 
 public class Utils {
     public static int dip2px(Context context, float dipValue) {
@@ -44,7 +50,7 @@ public class Utils {
         } else if ("TextAlign.center".equals(alignmentString)) {
             return Gravity.CENTER_HORIZONTAL;
         }
-        return multiLines? gravity : (gravity | Gravity.CENTER_VERTICAL);
+        return multiLines ? gravity : (gravity | Gravity.CENTER_VERTICAL);
     }
 
     public static int string2InputType(String inputTypeString, boolean multiLines) {
@@ -57,5 +63,30 @@ public class Utils {
             type = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
         }
         return multiLines ? (type | InputType.TYPE_TEXT_FLAG_MULTI_LINE) : type;
+    }
+
+    public static int calculateInputLength(Editable s) {
+        if (s == null || s.length() <= 0) return 0;
+        String temp = s.toString();
+        int emojiCount = EmojiParser.extractEmojis(temp).size();
+        String resultWithoutEmojiString = EmojiParser.removeAllEmojis(temp).replaceAll("[\\ufe0f]", "");
+//        Log.d("calculateInputLength", "emoji resultWithOutEmojiUnicode: " + convert(resultWithoutEmojiString));
+        int ret = resultWithoutEmojiString.length() + emojiCount;
+//        Log.d("calculateInputLength", "emojicount: " + emojiCount + "  totalLength:" + ret + "  resultWithoutEmojiString:" + resultWithoutEmojiString);
+        return ret;
+    }
+
+    public static String convert(String string) {
+        StringBuffer unicode = new StringBuffer();
+
+        for (int i = 0; i < string.length(); i++) {
+            // 取出每一个字符
+            char c = string.charAt(i);
+
+            // 转换为unicode
+            unicode.append(String.format("\\u%04x", Integer.valueOf(c)));
+        }
+
+        return unicode.toString();
     }
 }

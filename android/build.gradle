@@ -28,3 +28,7 @@ android {
         minSdkVersion 16
     }
 }
+
+dependencies {
+    implementation 'com.vdurmont:emoji-java:5.1.1'
+}
