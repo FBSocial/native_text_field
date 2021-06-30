@@ -27,12 +27,13 @@ import io.flutter.plugin.platform.PlatformView;
 import static com.fanbook.native_text_field.NativeTextFieldPlugin.VIEW_TYPE_ID;
 
 public class NativeEditView implements PlatformView, MethodChannel.MethodCallHandler {
-    private static final String TAG = "NativeEditView";
+//    private static final String TAG = "NativeEditView";
 
     private final Context mContext;
     private final EditText mEditText;
     private FixedHeightScrollView mContainer;
     private MethodChannel methodChannel;
+    private int mMaxLength = 10;
 
     public NativeEditView(Context context, int viewId, Map<String, Object> creationParams, BinaryMessenger
             messenger) {
@@ -49,7 +50,7 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
     private void initViewParams(Map<String, Object> params) {
         CreationParams creationParams = new CreationParams(params);
-        Log.d(TAG, "initViewParams: " + creationParams);
+//        Log.d(TAG, "initViewParams: " + creationParams);
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         mEditText.setMinLines(1);
         mEditText.setMaxLines(creationParams.getMaxLines());
@@ -81,8 +82,10 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
         mEditText.setHint(creationParams.getPlaceHolder());
         mEditText.setHintTextColor((int) creationParams.getPlaceHolderStyle().getColor());
-        InputFilter[] filters = {new InputFilter.LengthFilter(creationParams.getMaxLength())};
-        mEditText.setFilters(filters);
+        // 不再通过下面的方式设置最大长度，一个emoji需要算成一个字符，使用TextWatcher达到需求
+//        InputFilter[] filters = {new InputFilter.LengthFilter(creationParams.getMaxLength())};
+//        mEditText.setFilters(filters);
+        mMaxLength = creationParams.getMaxLength();
         mEditText.setBackground(null);
         mEditText.setLongClickable(true);
 
@@ -102,28 +105,36 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
     private void initMethodChannel(BinaryMessenger messenger, int viewId) {
         methodChannel = new MethodChannel(messenger, VIEW_TYPE_ID + "_" + viewId);
         methodChannel.setMethodCallHandler(this);
-        mEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                Log.d(TAG, "beforeTextChanged: " + s.toString() + " start:" + start + ", count:" + count + ", after:" + after);
-            }
+//        mEditText.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                Log.d(TAG, "beforeTextChanged: " + s.toString() + " start:" + start + ", count:" + count + ", after:" + after);
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                Log.d(TAG, "onTextChanged: " + s.toString() + " start:" + start + ", count:" + count);
+//                methodChannel.invokeMethod("updateText", s.toString());
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                Log.d(TAG, "afterTextChanged: " + s.toString());
+//            }
+//        });
 
+        mEditText.addTextChangedListener(new CodePointTextWatcher(mEditText, mMaxLength) {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.d(TAG, "onTextChanged: " + s.toString() + " start:" + start + ", count:" + count);
+                super.onTextChanged(s, start, before, count);
                 methodChannel.invokeMethod("updateText", s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                Log.d(TAG, "afterTextChanged: " + s.toString());
             }
         });
 
         mEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "onFocusChange: " + hasFocus);
+//                Log.d(TAG, "onFocusChange: " + hasFocus);
                 methodChannel.invokeMethod("updateFocus", hasFocus);
             }
         });
@@ -131,7 +142,7 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-        Log.d(TAG, "onMethodCall: " + call.method);
+//        Log.d(TAG, "onMethodCall: " + call.method);
         switch (call.method) {
             case "setText":
                 handleSetText(call, result);
@@ -164,7 +175,7 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
 
     private void handleUpdateFocus(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         Boolean focus = (Boolean) call.arguments;
-        Log.d(TAG, "handleUpdateFocus: flutter -> android: " + focus);
+//        Log.d(TAG, "handleUpdateFocus: flutter -> android: " + focus);
         if (focus) {
             mEditText.requestFocus();
         } else {
