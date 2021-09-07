@@ -128,9 +128,9 @@ class _NativeTextFieldState extends State<NativeTextField> {
         break;
       case 'updateText':
         final text = call.arguments ?? '';
-        widget.onChanged?.call(text);
         _updateMap.add(text);
         _controller.text = text;
+        widget.onChanged?.call(text);
         break;
       case 'submitText':
         final text = call.arguments ?? '';
