@@ -12,6 +12,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
+
+
+
 class NativeTextField extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -89,13 +92,11 @@ class _NativeTextFieldState extends State<NativeTextField> {
     };
   }
 
+  bool shouldFocus=false;
   @override
   void initState() {
-    if (widget.autoFocus)
-      Future.delayed(const Duration(milliseconds: 300)).then((_) {
-        _channel?.invokeMethod('updateFocus', true);
-      });
 
+    shouldFocus = widget.autoFocus;
     _controller = widget.controller ?? TextEditingController();
     _focusNode = widget.focusNode ?? FocusNode();
 
@@ -150,15 +151,19 @@ class _NativeTextFieldState extends State<NativeTextField> {
         child: Focus(
           focusNode: _focusNode,
           onFocusChange: (focus) {
+            if(_channel == null) {
+              shouldFocus = _focusNode.hasFocus;
+            }
             _channel?.invokeMethod('updateFocus', focus);
           },
           child: UiKitView(
             viewType: "com.fanbook.native_textfield",
             creationParams: createParams(),
             creationParamsCodec: const StandardMessageCodec(),
-            onPlatformViewCreated: (viewId) {
+            onPlatformViewCreated: (viewId) async{
               _channel = MethodChannel('com.fanbook.native_textfield_$viewId');
               _channel.setMethodCallHandler(_handlerCall);
+              _channel.invokeMethod('updateFocus', shouldFocus|| widget.autoFocus);
             },
             gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
               new Factory<OneSequenceGestureRecognizer>(
