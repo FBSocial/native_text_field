@@ -34,6 +34,7 @@ class NativeTextField extends StatefulWidget {
   final bool autoFocus;
   final bool readOnly;
   final int maxLines;
+  final bool disableFocusNodeListener; // 禁用focusNode的listener监听
 
   const NativeTextField({
     this.controller,
@@ -54,6 +55,7 @@ class NativeTextField extends StatefulWidget {
     this.maxLines = 1,
     this.autoFocus = false,
     this.readOnly = false,
+    this.disableFocusNodeListener = false,
   });
 
   @override
@@ -121,6 +123,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
     switch (call.method) {
       case 'updateFocus':
         final focus = call.arguments ?? false;
+        if (widget.disableFocusNodeListener) return;
         if (focus) {
           _focusNode.requestFocus();
         } else {
