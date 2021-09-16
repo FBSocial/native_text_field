@@ -12,11 +12,24 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
+class NativeTextFieldController{
 
+  MethodChannel channel;
+
+  NativeTextFieldController({
+    this.channel
+  });
+
+  void updateFocus(bool focus) {
+    channel?.invokeMethod('updateFocus', focus);
+  }
+
+}
 
 
 class NativeTextField extends StatefulWidget {
   final TextEditingController controller;
+  final NativeTextFieldController nativeController;
   final FocusNode focusNode;
   final String text;
   final TextStyle textStyle;
@@ -38,6 +51,7 @@ class NativeTextField extends StatefulWidget {
 
   const NativeTextField({
     this.controller,
+    this.nativeController,
     this.focusNode,
     this.text = '',
     this.textStyle,
@@ -165,6 +179,8 @@ class _NativeTextFieldState extends State<NativeTextField> {
             creationParamsCodec: const StandardMessageCodec(),
             onPlatformViewCreated: (viewId) async{
               _channel = MethodChannel('com.fanbook.native_textfield_$viewId');
+              if (widget.nativeController != null)
+                widget.nativeController.channel = _channel;
               _channel.setMethodCallHandler(_handlerCall);
               _channel.invokeMethod('updateFocus', shouldFocus|| widget.autoFocus);
             },
@@ -182,6 +198,9 @@ class _NativeTextFieldState extends State<NativeTextField> {
         child: Focus(
           focusNode: _focusNode,
           onFocusChange: (focus) {
+            if(_channel == null) {
+              shouldFocus = _focusNode.hasFocus;
+            }
             _channel?.invokeMethod('updateFocus', focus);
           },
           child: PlatformViewLink(
@@ -208,7 +227,12 @@ class _NativeTextFieldState extends State<NativeTextField> {
               )
                 ..addOnPlatformViewCreatedListener((id) {
                   _channel = MethodChannel('com.fanbook.native_textfield_$id');
+                  if (widget.nativeController != null)
+                    widget.nativeController.channel = _channel;
                   _channel.setMethodCallHandler(_handlerCall);
+                  Future.delayed(const Duration(milliseconds: 300)).then((value) {
+                    _channel.invokeMethod('updateFocus', shouldFocus|| widget.autoFocus);
+                  });
                 })
                 ..create();
             },
