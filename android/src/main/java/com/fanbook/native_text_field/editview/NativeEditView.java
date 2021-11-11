@@ -1,17 +1,16 @@
 package com.fanbook.native_text_field.editview;
 
+import static com.fanbook.native_text_field.NativeTextFieldPlugin.VIEW_TYPE_ID;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.TextWatcher;
-import android.util.Log;
+import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 
 import com.fanbook.native_text_field.Utils;
@@ -23,8 +22,6 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
-
-import static com.fanbook.native_text_field.NativeTextFieldPlugin.VIEW_TYPE_ID;
 
 public class NativeEditView implements PlatformView, MethodChannel.MethodCallHandler {
 //    private static final String TAG = "NativeEditView";
@@ -39,6 +36,7 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
             messenger) {
         mContext = context;
         mEditText = new EditText(context);
+
 
 //        int resId = context.getResources().getIdentifier("NativeEditTextTheme", "style", mContext.getPackageName());
 //        mEditText = new EditText(new ContextThemeWrapper(context, resId));
@@ -100,6 +98,62 @@ public class NativeEditView implements PlatformView, MethodChannel.MethodCallHan
         mContainer.setHorizontalScrollBarEnabled(false);
         mContainer.setVerticalScrollBarEnabled(false);
         mContainer.setScrollable(multiLines);
+
+        mEditText.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
+        int fontWeight = creationParams.getTextStyle().getFontWeight();
+        resolveStyleAndSetTypeface(mEditText.getTypeface(), convertWeight(fontWeight));
+    }
+
+    @SuppressLint("Range")
+    private void resolveStyleAndSetTypeface(Typeface typeface,
+                                            @IntRange(from = -1, to = 1000) int weight) {
+
+        if (weight > 300) {
+            mEditText.setTypeface(typeface, Typeface.BOLD);
+        } else {
+
+            mEditText.setTypeface(typeface, Typeface.NORMAL);
+        }
+
+//        /// 因为Q以上系统设置weight 也只有粗细两种,所以还是用上面的方法
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            weight = Math.min(FontStyle.FONT_WEIGHT_MAX, weight);
+////                final boolean italic = (style & Typeface.ITALIC) != 0;
+//            mEditText.setTypeface(Typeface.create(typeface, weight, false));
+//        } else {
+//
+//            if (weight > 300) {
+//                mEditText.setTypeface(typeface, Typeface.BOLD);
+//            } else {
+//
+//                mEditText.setTypeface(typeface, Typeface.NORMAL);
+//            }
+//        }
+    }
+
+    private int convertWeight(int weight) {
+        if (weight == 0) {
+            return 100;//FontStyle.FONT_WEIGHT_THIN;
+        } else if (weight == 1) {
+            return 200;//FontStyle.FONT_WEIGHT_EXTRA_LIGHT;
+        } else if (weight == 2) {
+            return 300;//FontStyle.FONT_WEIGHT_LIGHT;
+        } else if (weight == 3) {
+            return 400;//FontStyle.FONT_WEIGHT_NORMAL;
+        } else if (weight == 4) {
+            return 500;//FontStyle.FONT_WEIGHT_MEDIUM;
+        } else if (weight == 5) {
+            return 600;//FontStyle.FONT_WEIGHT_SEMI_BOLD;
+        } else if (weight == 6) {
+            return 700;//FontStyle.FONT_WEIGHT_BOLD;
+        } else if (weight == 7) {
+            return 800;//FontStyle.FONT_WEIGHT_EXTRA_BOLD;
+        } else if (weight == 8) {
+            return 900;//FontStyle.FONT_WEIGHT_BLACK;
+        } else if (weight == 9) {
+            return 1000;//FontStyle.FONT_WEIGHT_MAX;
+        }
+        return 400;//FontStyle.FONT_WEIGHT_NORMAL;
     }
 
     private void initMethodChannel(BinaryMessenger messenger, int viewId) {

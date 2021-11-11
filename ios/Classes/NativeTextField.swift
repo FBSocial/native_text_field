@@ -7,6 +7,7 @@
 
 import Foundation
 import Flutter
+import UIKit
 
 class NativeTextField : NSObject,FlutterPlatformView {
     
@@ -159,10 +160,36 @@ extension NativeTextField {
         let fontSize = (textStyle["fontSize"] as? Int) ?? 14
         let height = (textStyle["height"] as? Double) ?? 1.17
         let textColor = UIColor.init(color: textColorValue)
+        let weight = (textStyle["fontWeight"] as? Int) ?? 3
+        
         return [
-            .font: UIFont.systemFont(ofSize: CGFloat(fontSize)),
+            .font: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: convertWeight(fontWeight:weight)),
             .foregroundColor: textColor,
         ]
+    }
+    
+    /// Flutter 为 int  Swift 是CGFloat (并且对应的值是完全不一样的,所以要做对应关系)
+    func convertWeight( fontWeight:Int) -> UIFont.Weight {
+        if fontWeight == 0 {
+            return UIFont.Weight.ultraLight
+        }else if fontWeight == 1 {
+            return UIFont.Weight.thin
+        }else if fontWeight == 2 {
+            return UIFont.Weight.light
+        }else if fontWeight == 3 {
+            return UIFont.Weight.regular
+        }else if fontWeight == 4 {
+            return UIFont.Weight.medium
+        }else if fontWeight == 5 {
+            return UIFont.Weight.semibold
+        }else if fontWeight == 6 {
+            return UIFont.Weight.bold
+        }else if fontWeight == 7 {
+            return UIFont.Weight.heavy
+        }else if fontWeight == 8 {
+            return UIFont.Weight.black
+        }
+        return .regular
     }
     
     func string2textAlignment(str: String?) -> NSTextAlignment {

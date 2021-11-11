@@ -8,11 +8,11 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
 
-class NativeTextFieldController{
+class NativeTextFieldController {
 
   MethodChannel channel;
 
@@ -84,19 +84,26 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
   Map createParams() {
     return {
-      'width': widget.width ?? MediaQuery.of(context).size.width,
+      'width': widget.width ?? MediaQuery
+          .of(context)
+          .size
+          .width,
       'height': widget.height ?? 40,
       'text': widget.text,
       'textStyle': {
         'color': (widget.textStyle?.color ?? Colors.black).value,
         'fontSize': widget.textStyle.fontSize,
-        'height': widget.textStyle.height ?? 1.17
+        'height': widget.textStyle.height ?? 1.17,
+        'fontWeight': widget.textStyle.fontWeight.index ??
+            FontWeight.normal.index,
       },
       'placeHolder': widget.placeHolder,
       'placeHolderStyle': {
         'color': (widget.placeHolderStyle?.color ?? Colors.black).value,
         'fontSize': widget.placeHolderStyle.fontSize,
-        'height': widget.placeHolderStyle.height ?? 1.35
+        'height': widget.placeHolderStyle.height ?? 1.35,
+        'fontWeight': widget?.placeHolderStyle?.fontWeight?.index ??
+            FontWeight.normal.index,
       },
       'textAlign': widget.textAlign.toString(),
       'maxLength': widget.maxLength,
@@ -108,10 +115,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
     };
   }
 
-  bool shouldFocus=false;
+  bool shouldFocus = false;
+
   @override
   void initState() {
-
     shouldFocus = widget.autoFocus;
     _controller = widget.controller ?? TextEditingController();
     _focusNode = widget.focusNode ?? FocusNode();
@@ -168,7 +175,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         child: Focus(
           focusNode: _focusNode,
           onFocusChange: (focus) {
-            if(_channel == null) {
+            if (_channel == null) {
               shouldFocus = _focusNode.hasFocus;
             }
             _channel?.invokeMethod('updateFocus', focus);
@@ -177,16 +184,17 @@ class _NativeTextFieldState extends State<NativeTextField> {
             viewType: "com.fanbook.native_textfield",
             creationParams: createParams(),
             creationParamsCodec: const StandardMessageCodec(),
-            onPlatformViewCreated: (viewId) async{
+            onPlatformViewCreated: (viewId) async {
               _channel = MethodChannel('com.fanbook.native_textfield_$viewId');
               if (widget.nativeController != null)
                 widget.nativeController.channel = _channel;
               _channel.setMethodCallHandler(_handlerCall);
-              _channel.invokeMethod('updateFocus', shouldFocus|| widget.autoFocus);
+              _channel.invokeMethod(
+                  'updateFocus', shouldFocus || widget.autoFocus);
             },
             gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
               new Factory<OneSequenceGestureRecognizer>(
-                () => new EagerGestureRecognizer(),
+                    () => new EagerGestureRecognizer(),
               ),
             ].toSet(),
           ),
@@ -198,7 +206,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         child: Focus(
           focusNode: _focusNode,
           onFocusChange: (focus) {
-            if(_channel == null) {
+            if (_channel == null) {
               shouldFocus = _focusNode.hasFocus;
             }
             _channel?.invokeMethod('updateFocus', focus);
@@ -210,7 +218,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
                 controller: controller,
                 gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
                   new Factory<OneSequenceGestureRecognizer>(
-                    () => new EagerGestureRecognizer(),
+                        () => new EagerGestureRecognizer(),
                   ),
                 ].toSet(),
                 hitTestBehavior: PlatformViewHitTestBehavior.opaque,
@@ -230,8 +238,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
                   if (widget.nativeController != null)
                     widget.nativeController.channel = _channel;
                   _channel.setMethodCallHandler(_handlerCall);
-                  Future.delayed(const Duration(milliseconds: 300)).then((value) {
-                    _channel.invokeMethod('updateFocus', shouldFocus|| widget.autoFocus);
+                  Future.delayed(const Duration(milliseconds: 300)).then((
+                      value) {
+                    _channel.invokeMethod(
+                        'updateFocus', shouldFocus || widget.autoFocus);
                   });
                 })
                 ..create();
