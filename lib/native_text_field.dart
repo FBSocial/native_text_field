@@ -94,7 +94,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         'color': (widget.textStyle?.color ?? Colors.black).value,
         'fontSize': widget.textStyle.fontSize,
         'height': widget.textStyle.height ?? 1.17,
-        'fontWeight': widget.textStyle.fontWeight.index ??
+        'fontWeight': widget?.textStyle?.fontWeight?.index ??
             FontWeight.normal.index,
       },
       'placeHolder': widget.placeHolder,
