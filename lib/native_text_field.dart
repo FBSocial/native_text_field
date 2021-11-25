@@ -13,19 +13,14 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class NativeTextFieldController {
-
   MethodChannel channel;
 
-  NativeTextFieldController({
-    this.channel
-  });
+  NativeTextFieldController({this.channel});
 
   void updateFocus(bool focus) {
     channel?.invokeMethod('updateFocus', focus);
   }
-
 }
-
 
 class NativeTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -48,6 +43,7 @@ class NativeTextField extends StatefulWidget {
   final bool readOnly;
   final int maxLines;
   final bool disableFocusNodeListener; // 禁用focusNode的listener监听
+  final bool disableGesture;
 
   const NativeTextField({
     this.controller,
@@ -70,6 +66,7 @@ class NativeTextField extends StatefulWidget {
     this.autoFocus = false,
     this.readOnly = false,
     this.disableFocusNodeListener = false,
+    this.disableGesture = false,
   });
 
   @override
@@ -84,18 +81,15 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
   Map createParams() {
     return {
-      'width': widget.width ?? MediaQuery
-          .of(context)
-          .size
-          .width,
+      'width': widget.width ?? MediaQuery.of(context).size.width,
       'height': widget.height ?? 40,
       'text': widget.text,
       'textStyle': {
         'color': (widget.textStyle?.color ?? Colors.black).value,
         'fontSize': widget.textStyle.fontSize,
         'height': widget.textStyle.height ?? 1.17,
-        'fontWeight': widget?.textStyle?.fontWeight?.index ??
-            FontWeight.normal.index,
+        'fontWeight':
+            widget?.textStyle?.fontWeight?.index ?? FontWeight.normal.index,
       },
       'placeHolder': widget.placeHolder,
       'placeHolderStyle': {
@@ -169,6 +163,13 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final gestureRecognizers = widget.disableGesture
+        ? null
+        : <Factory<OneSequenceGestureRecognizer>>[
+            new Factory<OneSequenceGestureRecognizer>(
+              () => new EagerGestureRecognizer(),
+            ),
+          ].toSet();
     if (Platform.isIOS) {
       return SizedBox(
         height: widget.height ?? 40,
@@ -192,11 +193,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
               _channel.invokeMethod(
                   'updateFocus', shouldFocus || widget.autoFocus);
             },
-            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
-              new Factory<OneSequenceGestureRecognizer>(
-                    () => new EagerGestureRecognizer(),
-              ),
-            ].toSet(),
+            gestureRecognizers: gestureRecognizers,
           ),
         ),
       );
@@ -218,7 +215,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
                 controller: controller,
                 gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
                   new Factory<OneSequenceGestureRecognizer>(
-                        () => new EagerGestureRecognizer(),
+                    () => new EagerGestureRecognizer(),
                   ),
                 ].toSet(),
                 hitTestBehavior: PlatformViewHitTestBehavior.opaque,
@@ -238,8 +235,8 @@ class _NativeTextFieldState extends State<NativeTextField> {
                   if (widget.nativeController != null)
                     widget.nativeController.channel = _channel;
                   _channel.setMethodCallHandler(_handlerCall);
-                  Future.delayed(const Duration(milliseconds: 300)).then((
-                      value) {
+                  Future.delayed(const Duration(milliseconds: 300))
+                      .then((value) {
                     _channel.invokeMethod(
                         'updateFocus', shouldFocus || widget.autoFocus);
                   });
