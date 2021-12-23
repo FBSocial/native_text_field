@@ -28,7 +28,7 @@ extension NativeTextField: UITextFieldDelegate {
         textField.attributedText = NSMutableAttributedString(string: initText, attributes: defaultAttributes)
         textField.delegate = self
         textField.font = defaultAttributes[.font] as? UIFont
-        textView.tintColor = UIColor(color: cursorColor)
+        textField.tintColor = UIColor(color: cursorColor)
         textField.textColor = defaultAttributes[.foregroundColor] as? UIColor ?? UIColor.black
         textField.textAlignment = string2textAlignment(str: textAlign)
         textField.backgroundColor = UIColor.clear
