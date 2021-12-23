@@ -87,6 +87,9 @@ extension NativeTextField: UITextViewDelegate {
         let keyboardType = args?["keyboardType"] as? String
         let allowRegExp = (args?["allowRegExp"] as? String) ?? ""
         let readOnly = (args?["readOnly"] as? Bool) ?? false
+        let cursorColor = (args?["cursorColor"] as? Int) ?? 0
+        
+        
 
         defaultAttributes = textStyle2Attribute(textStyle: textStyle, defaultAttr: defaultAttributes)
         let placeHolderStyleAttr = textStyle2Attribute(textStyle: placeHolderStyle, defaultAttr: defaultAttributes)
@@ -96,6 +99,7 @@ extension NativeTextField: UITextViewDelegate {
         textView.delegate = self
         textView.font = defaultAttributes[.font] as? UIFont
         textView.textAlignment = string2textAlignment(str: textAlign)
+        textView.tintColor = UIColor(color: cursorColor)
         textView.textColor = defaultAttributes[.foregroundColor] as? UIColor ?? UIColor.black
         textView.backgroundColor = UIColor.clear
         textView.keyboardType = string2KeyboardType(str: keyboardType)

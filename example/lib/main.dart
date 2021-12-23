@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp> {
             maxLines: 3,
             maxLength: 500,
             height: 168,
+            cursorColor: Colors.green,
             placeHolderStyle: Theme.of(context).textTheme.bodyText1.copyWith(
                 color: Colors.redAccent,
                 fontSize: 18,
