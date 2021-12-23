@@ -19,6 +19,7 @@ extension NativeTextField: UITextFieldDelegate {
         let keyboardType = args?["keyboardType"] as? String
         let allowRegExp = (args?["allowRegExp"] as? String) ?? ""
         let readOnly = (args?["readOnly"] as? Bool) ?? false
+        let cursorColor = (args?["cursorColor"] as? Int) ?? 0
 
         defaultAttributes = textStyle2Attribute(textStyle: textStyle, defaultAttr: defaultAttributes)
         let placeHolderStyleAttr = textStyle2Attribute(textStyle: placeHolderStyle, defaultAttr: defaultAttributes)
@@ -27,6 +28,7 @@ extension NativeTextField: UITextFieldDelegate {
         textField.attributedText = NSMutableAttributedString(string: initText, attributes: defaultAttributes)
         textField.delegate = self
         textField.font = defaultAttributes[.font] as? UIFont
+        textView.tintColor = UIColor(color: cursorColor)
         textField.textColor = defaultAttributes[.foregroundColor] as? UIColor ?? UIColor.black
         textField.textAlignment = string2textAlignment(str: textAlign)
         textField.backgroundColor = UIColor.clear

@@ -42,6 +42,7 @@ class NativeTextField extends StatefulWidget {
   final bool autoFocus;
   final bool readOnly;
   final int maxLines;
+  final Color cursorColor;
   final bool disableFocusNodeListener; // 禁用focusNode的listener监听
   final bool disableGesture;
 
@@ -63,6 +64,7 @@ class NativeTextField extends StatefulWidget {
     this.onChanged,
     this.allowRegExp,
     this.maxLines = 1,
+    this.cursorColor,
     this.autoFocus = false,
     this.readOnly = false,
     this.disableFocusNodeListener = false,
@@ -81,7 +83,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
   Map createParams() {
     return {
-      'width': widget.width ?? MediaQuery.of(context).size.width,
+      'width': widget.width ?? MediaQuery
+          .of(context)
+          .size
+          .width,
       'height': widget.height ?? 40,
       'text': widget.text,
       'textStyle': {
@@ -89,7 +94,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         'fontSize': widget.textStyle.fontSize,
         'height': widget.textStyle.height ?? 1.17,
         'fontWeight':
-            widget?.textStyle?.fontWeight?.index ?? FontWeight.normal.index,
+        widget?.textStyle?.fontWeight?.index ?? FontWeight.normal.index,
       },
       'placeHolder': widget.placeHolder,
       'placeHolderStyle': {
@@ -105,7 +110,8 @@ class _NativeTextFieldState extends State<NativeTextField> {
       'keyboardType': widget.keyboardType.toJson()['name'],
       'allowRegExp': widget.allowRegExp,
       'readOnly': widget.readOnly,
-      'maxLines': widget.maxLines
+      'maxLines': widget.maxLines,
+      'cursorColor': (widget.cursorColor ?? Colors.black).value,
     };
   }
 
@@ -166,10 +172,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
     final gestureRecognizers = widget.disableGesture
         ? null
         : <Factory<OneSequenceGestureRecognizer>>[
-            new Factory<OneSequenceGestureRecognizer>(
-              () => new EagerGestureRecognizer(),
-            ),
-          ].toSet();
+      new Factory<OneSequenceGestureRecognizer>(
+            () => new EagerGestureRecognizer(),
+      ),
+    ].toSet();
     if (Platform.isIOS) {
       return SizedBox(
         height: widget.height ?? 40,
@@ -215,7 +221,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
                 controller: controller,
                 gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
                   new Factory<OneSequenceGestureRecognizer>(
-                    () => new EagerGestureRecognizer(),
+                        () => new EagerGestureRecognizer(),
                   ),
                 ].toSet(),
                 hitTestBehavior: PlatformViewHitTestBehavior.opaque,
