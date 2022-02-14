@@ -13,7 +13,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class NativeTextFieldController {
-  MethodChannel channel;
+  MethodChannel? channel;
 
   NativeTextFieldController({this.channel});
 
@@ -23,26 +23,26 @@ class NativeTextFieldController {
 }
 
 class NativeTextField extends StatefulWidget {
-  final TextEditingController controller;
-  final NativeTextFieldController nativeController;
-  final FocusNode focusNode;
+  final TextEditingController? controller;
+  final NativeTextFieldController? nativeController;
+  final FocusNode? focusNode;
   final String text;
-  final TextStyle textStyle;
+  final TextStyle? textStyle;
   final String placeHolder;
-  final TextStyle placeHolderStyle;
+  final TextStyle? placeHolderStyle;
   final int maxLength;
   final TextAlign textAlign;
   final TextInputType keyboardType; // 支持的类型是 .text/.number/.phone/.emailAddress
-  final double width;
-  final double height;
-  final String allowRegExp;
-  final VoidCallback onEditingComplete;
-  final Function(String) onSubmitted;
-  final Function(String) onChanged;
+  final double? width;
+  final double? height;
+  final String? allowRegExp;
+  final VoidCallback? onEditingComplete;
+  final Function(String)? onSubmitted;
+  final Function(String)? onChanged;
   final bool autoFocus;
   final bool readOnly;
   final int maxLines;
-  final Color cursorColor;
+  final Color? cursorColor;
   final bool disableFocusNodeListener; // 禁用focusNode的listener监听
   final bool disableGesture;
 
@@ -76,32 +76,29 @@ class NativeTextField extends StatefulWidget {
 }
 
 class _NativeTextFieldState extends State<NativeTextField> {
-  MethodChannel _channel;
-  TextEditingController _controller;
-  FocusNode _focusNode;
+  MethodChannel? _channel;
+  late TextEditingController _controller;
+  FocusNode? _focusNode;
   Set _updateMap = {};
 
   Map createParams() {
     return {
-      'width': widget.width ?? MediaQuery
-          .of(context)
-          .size
-          .width,
+      'width': widget.width ?? MediaQuery.of(context).size.width,
       'height': widget.height ?? 40,
       'text': widget.text,
       'textStyle': {
         'color': (widget.textStyle?.color ?? Colors.black).value,
-        'fontSize': widget.textStyle.fontSize,
-        'height': widget.textStyle.height ?? 1.17,
+        'fontSize': widget.textStyle?.fontSize,
+        'height': widget.textStyle?.height ?? 1.17,
         'fontWeight':
-        widget?.textStyle?.fontWeight?.index ?? FontWeight.normal.index,
+            widget.textStyle?.fontWeight?.index ?? FontWeight.normal.index,
       },
       'placeHolder': widget.placeHolder,
       'placeHolderStyle': {
         'color': (widget.placeHolderStyle?.color ?? Colors.black).value,
-        'fontSize': widget.placeHolderStyle.fontSize,
-        'height': widget.placeHolderStyle.height ?? 1.35,
-        'fontWeight': widget?.placeHolderStyle?.fontWeight?.index ??
+        'fontSize': widget.placeHolderStyle?.fontSize,
+        'height': widget.placeHolderStyle?.height ?? 1.35,
+        'fontWeight': widget.placeHolderStyle?.fontWeight?.index ??
             FontWeight.normal.index,
       },
       'textAlign': widget.textAlign.toString(),
@@ -125,7 +122,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
     if (_controller.text.isNotEmpty) {
       Future.delayed(const Duration(milliseconds: 300)).then((value) {
-        _channel.invokeMethod('setText', _controller.text);
+        _channel?.invokeMethod('setText', _controller.text);
       });
     }
 
@@ -135,7 +132,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
         _updateMap.remove(text);
         return;
       }
-      _channel.invokeMethod('setText', _controller.text);
+      _channel?.invokeMethod('setText', _controller.text);
     });
     super.initState();
   }
@@ -146,9 +143,9 @@ class _NativeTextFieldState extends State<NativeTextField> {
         final focus = call.arguments ?? false;
         if (widget.disableFocusNodeListener) return;
         if (focus) {
-          _focusNode.requestFocus();
+          _focusNode?.requestFocus();
         } else {
-          _focusNode.unfocus();
+          _focusNode?.unfocus();
         }
         break;
       case 'updateText':
@@ -172,10 +169,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
     final gestureRecognizers = widget.disableGesture
         ? null
         : <Factory<OneSequenceGestureRecognizer>>[
-      new Factory<OneSequenceGestureRecognizer>(
-            () => new EagerGestureRecognizer(),
-      ),
-    ].toSet();
+            new Factory<OneSequenceGestureRecognizer>(
+              () => new EagerGestureRecognizer(),
+            ),
+          ].toSet();
     if (Platform.isIOS) {
       return SizedBox(
         height: widget.height ?? 40,
@@ -183,7 +180,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
           focusNode: _focusNode,
           onFocusChange: (focus) {
             if (_channel == null) {
-              shouldFocus = _focusNode.hasFocus;
+              shouldFocus = _focusNode?.hasFocus ?? false;
             }
             _channel?.invokeMethod('updateFocus', focus);
           },
@@ -194,9 +191,9 @@ class _NativeTextFieldState extends State<NativeTextField> {
             onPlatformViewCreated: (viewId) async {
               _channel = MethodChannel('com.fanbook.native_textfield_$viewId');
               if (widget.nativeController != null)
-                widget.nativeController.channel = _channel;
-              _channel.setMethodCallHandler(_handlerCall);
-              _channel.invokeMethod(
+                widget.nativeController?.channel = _channel;
+              _channel?.setMethodCallHandler(_handlerCall);
+              _channel?.invokeMethod(
                   'updateFocus', shouldFocus || widget.autoFocus);
             },
             gestureRecognizers: gestureRecognizers,
@@ -210,7 +207,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
           focusNode: _focusNode,
           onFocusChange: (focus) {
             if (_channel == null) {
-              shouldFocus = _focusNode.hasFocus;
+              shouldFocus = _focusNode?.hasFocus ?? false;
             }
             _channel?.invokeMethod('updateFocus', focus);
           },
@@ -218,10 +215,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
             viewType: "com.fanbook.native_textfield",
             surfaceFactory: (context, controller) {
               return AndroidViewSurface(
-                controller: controller,
+                controller: controller as AndroidViewController,
                 gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
                   new Factory<OneSequenceGestureRecognizer>(
-                        () => new EagerGestureRecognizer(),
+                    () => new EagerGestureRecognizer(),
                   ),
                 ].toSet(),
                 hitTestBehavior: PlatformViewHitTestBehavior.opaque,
@@ -239,11 +236,11 @@ class _NativeTextFieldState extends State<NativeTextField> {
                 ..addOnPlatformViewCreatedListener((id) {
                   _channel = MethodChannel('com.fanbook.native_textfield_$id');
                   if (widget.nativeController != null)
-                    widget.nativeController.channel = _channel;
-                  _channel.setMethodCallHandler(_handlerCall);
+                    widget.nativeController!.channel = _channel;
+                  _channel?.setMethodCallHandler(_handlerCall);
                   Future.delayed(const Duration(milliseconds: 300))
                       .then((value) {
-                    _channel.invokeMethod(
+                    _channel?.invokeMethod(
                         'updateFocus', shouldFocus || widget.autoFocus);
                   });
                 })
