@@ -126,15 +126,24 @@ class _NativeTextFieldState extends State<NativeTextField> {
       });
     }
 
-    _controller.addListener(() {
-      final text = _controller.text;
-      if (_updateMap.contains(text)) {
-        _updateMap.remove(text);
-        return;
-      }
-      _channel?.invokeMethod('setText', _controller.text);
-    });
+    _controller.addListener(_controllerChanged);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_controllerChanged);
+    _channel?.setMethodCallHandler(null);
+    super.dispose();
+  }
+
+  void _controllerChanged() {
+    final text = _controller.text;
+    if (_updateMap.contains(text)) {
+      _updateMap.remove(text);
+      return;
+    }
+    _channel?.invokeMethod('setText', _controller.text);
   }
 
   Future<void> _handlerCall(MethodCall call) async {
