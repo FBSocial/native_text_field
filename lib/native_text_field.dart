@@ -45,6 +45,7 @@ class NativeTextField extends StatefulWidget {
   final Color? cursorColor;
   final bool disableFocusNodeListener; // 禁用focusNode的listener监听
   final bool disableGesture;
+  final bool useHybridComposition;
 
   const NativeTextField({
     this.controller,
@@ -69,6 +70,7 @@ class NativeTextField extends StatefulWidget {
     this.readOnly = false,
     this.disableFocusNodeListener = false,
     this.disableGesture = false,
+    this.useHybridComposition = true,
   });
 
   @override
@@ -220,45 +222,54 @@ class _NativeTextFieldState extends State<NativeTextField> {
             }
             _channel?.invokeMethod('updateFocus', focus);
           },
-          child: PlatformViewLink(
-            viewType: "com.fanbook.native_textfield",
-            surfaceFactory: (context, controller) {
-              return AndroidViewSurface(
-                controller: controller as AndroidViewController,
-                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
-                  new Factory<OneSequenceGestureRecognizer>(
-                    () => new EagerGestureRecognizer(),
-                  ),
-                ].toSet(),
-                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-              );
-            },
-            onCreatePlatformView: (params) {
-              params.onPlatformViewCreated(params.id);
-              return PlatformViewsService.initSurfaceAndroidView(
-                id: params.id,
-                viewType: "com.fanbook.native_textfield",
-                layoutDirection: TextDirection.ltr,
-                creationParams: createParams(),
-                creationParamsCodec: const StandardMessageCodec(),
-              )
-                ..addOnPlatformViewCreatedListener((id) {
-                  _channel = MethodChannel('com.fanbook.native_textfield_$id');
-                  if (widget.nativeController != null)
-                    widget.nativeController!.channel = _channel;
-                  _channel?.setMethodCallHandler(_handlerCall);
-                  Future.delayed(const Duration(milliseconds: 300))
-                      .then((value) {
-                    _channel?.invokeMethod(
-                        'updateFocus', shouldFocus || widget.autoFocus);
-                  });
-                })
-                ..create();
-            },
-          ),
+          child: widget.useHybridComposition
+              ? PlatformViewLink(
+                  viewType: "com.fanbook.native_textfield",
+                  surfaceFactory: (context, controller) {
+                    return AndroidViewSurface(
+                      controller: controller as AndroidViewController,
+                      gestureRecognizers:
+                          <Factory<OneSequenceGestureRecognizer>>[
+                        new Factory<OneSequenceGestureRecognizer>(
+                          () => new EagerGestureRecognizer(),
+                        ),
+                      ].toSet(),
+                      hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+                    );
+                  },
+                  onCreatePlatformView: (params) {
+                    params.onPlatformViewCreated(params.id);
+                    return PlatformViewsService.initSurfaceAndroidView(
+                      id: params.id,
+                      viewType: "com.fanbook.native_textfield",
+                      layoutDirection: TextDirection.ltr,
+                      creationParams: createParams(),
+                      creationParamsCodec: const StandardMessageCodec(),
+                    )
+                      ..addOnPlatformViewCreatedListener(_onPlatformViewCreated)
+                      ..create();
+                  },
+                )
+              : AndroidView(
+                  viewType: 'com.fanbook.native_textfield',
+                  layoutDirection: TextDirection.ltr,
+                  creationParams: createParams(),
+                  creationParamsCodec: const StandardMessageCodec(),
+                  onPlatformViewCreated: _onPlatformViewCreated,
+                ),
         ),
       );
     }
     return Text('暂不支持该平台');
+  }
+
+  void _onPlatformViewCreated(int id) {
+    _channel = MethodChannel('com.fanbook.native_textfield_$id');
+    if (widget.nativeController != null)
+      widget.nativeController!.channel = _channel;
+    _channel?.setMethodCallHandler(_handlerCall);
+    Future.delayed(const Duration(milliseconds: 300)).then((value) {
+      _channel?.invokeMethod('updateFocus', shouldFocus || widget.autoFocus);
+    });
   }
 }
