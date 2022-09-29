@@ -30,7 +30,7 @@ class NativeTextField extends StatefulWidget {
   final TextStyle? textStyle;
   final String placeHolder;
   final TextStyle? placeHolderStyle;
-  final int maxLength;
+  final int? maxLength;
   final TextAlign textAlign;
   final TextInputType keyboardType; // 支持的类型是 .text/.number/.phone/.emailAddress
   final double? width;
