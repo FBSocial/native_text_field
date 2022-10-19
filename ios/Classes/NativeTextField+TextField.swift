@@ -105,7 +105,12 @@ extension NativeTextField: UITextFieldDelegate {
 
         textField.typingAttributes = defaultAttributes
 
-        let comcatstr = textField.text!.replacingCharacters(in: Range(range, in: textField.text!)!, with: text)
+//        let comcatstr = textField.text.replacingCharacters(in: Range(range, in: textField.text!)!, with: text)
+        var comcatstr = "";
+        if let b_text = textField.text,
+            let textRange = Range(range, in: b_text) {
+            comcatstr = b_text.replacingCharacters(in: textRange,with: text)
+        }
         let canInputLen = maxLength - comcatstr.count
 
         if canInputLen >= 0 {
